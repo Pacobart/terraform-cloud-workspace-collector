@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"runtime"
 )
 
 type Workspace struct {
@@ -42,7 +43,14 @@ func getTerraformTokenFromConfig() string {
 	homeDir, err := os.UserHomeDir()
 	check(err)
 
-	dat, err := os.Open(fmt.Sprintf("%s/.terraform.d/credentials.tfrc.json", homeDir))
+	var tfCredFile string
+	if runtime.GOOS == "windows" {
+		tfCredFile = fmt.Sprintf("%s\\AppData\\Roaming\\terraform.d\\credentials.tfrc.json", homeDir)
+	} else {
+		tfCredFile = fmt.Sprintf("%s/.terraform.d/credentials.tfrc.json", homeDir)
+	}
+
+	dat, err := os.Open(tfCredFile)
 	check(err)
 	defer dat.Close()
 
@@ -74,7 +82,6 @@ func getWorkspaces(baseUrl string, token string, organization string) []Workspac
 		var workspaces WorkspaceList
 		err = json.Unmarshal(body, &workspaces)
 		check(err)
-		fmt.Println(workspaces)
 
 		allWorkspaces = append(allWorkspaces, workspaces.Data...)
 		nextPageURL = workspaces.Links.Next
@@ -100,4 +107,5 @@ func main() {
 		fmt.Printf("Organization: %s\n", workspace.Relationships.Organization.Data.ID)
 		fmt.Println("----------")
 	}
+	fmt.Println(fmt.Sprintf("%v workspaces found", len(workspaces)))
 }
