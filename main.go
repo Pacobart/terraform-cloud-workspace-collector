@@ -111,8 +111,10 @@ func getWorkspaces(baseUrl string, token string, organization string) []Workspac
 func generateHCL(workspaces []Workspace) *hclwrite.File {
 	hclFile := hclwrite.NewEmptyFile()
 	rootBody := hclFile.Body()
-	workspacesBlock := rootBody.AppendNewBlock("workspaces", nil) // TODO: needs to be workspaces = {}. currently returing workspaces {}
+
+	workspacesBlock := rootBody.AppendNewBlock("workspaces =", nil) // TODO: needs to be workspaces = {}. currently returing workspaces {}
 	workspacesBody := workspacesBlock.Body()
+
 	for _, ws := range workspaces {
 		workspacesBody.SetAttributeValue(ws.Attributes.Name, cty.ObjectVal(map[string]cty.Value{
 			"reponame":         cty.StringVal(ws.Attributes.VcsRepo.Identifier),
@@ -125,7 +127,6 @@ func generateHCL(workspaces []Workspace) *hclwrite.File {
 			"variables":        cty.StringVal("NONE"),
 		}))
 	}
-	fmt.Printf("%s", hclFile.Bytes())
 	return hclFile
 }
 
@@ -143,7 +144,7 @@ func main() {
 
 	// Generate HCL file
 	hcl := generateHCL(workspaces)
-	tfFile, err := os.Create("workspaces.tf")
+	tfFile, err := os.Create("workspaces.tfvars")
 	check(err)
 	tfFile.Write(hcl.Bytes())
 	//fmt.Printf("%s", hcl.Bytes())
