@@ -7,12 +7,20 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+
+	"github.com/hashicorp/hcl/v2/hclwrite"
+	"github.com/zclconf/go-cty/cty"
 )
 
 type Workspace struct {
 	ID         string `json:"id"`
 	Attributes struct {
-		Name string `json:"name"`
+		Name        string `json:"name"`
+		Description string `json:"description"`
+		VcsRepo     struct {
+			Branch     string `json:"branch"`
+			Identifier string `json:"identifier"`
+		} `json:"vcs-repo"`
 	} `json:"attributes"`
 	Relationships struct {
 		Organization struct {
@@ -21,6 +29,16 @@ type Workspace struct {
 				Type string `json:"type"`
 			} `json:"data"`
 		} `json:"organization"`
+		AgentPool struct {
+			Data struct {
+				Id string `json:"id"`
+			} `json:"data"`
+		} `json:"agent-pool"`
+		Project struct {
+			Data struct {
+				Id string `json:"id"`
+			} `json:"data"`
+		} `json:"project"`
 	} `json:"relationships"`
 }
 
@@ -90,6 +108,27 @@ func getWorkspaces(baseUrl string, token string, organization string) []Workspac
 	return allWorkspaces
 }
 
+func generateHCL(workspaces []Workspace) *hclwrite.File {
+	hclFile := hclwrite.NewEmptyFile()
+	rootBody := hclFile.Body()
+	workspacesBlock := rootBody.AppendNewBlock("workspaces", nil)
+	workspacesBody := workspacesBlock.Body()
+	for _, ws := range workspaces {
+		workspacesBody.SetAttributeValue(ws.Attributes.Name, cty.ObjectVal(map[string]cty.Value{
+			"reponame":         cty.StringVal(ws.Attributes.VcsRepo.Identifier),
+			"description":      cty.StringVal(ws.Attributes.Description),
+			"branchname":       cty.StringVal(ws.Attributes.VcsRepo.Branch),
+			"agent":            cty.StringVal(ws.Relationships.AgentPool.Data.Id),
+			"project_id":       cty.StringVal(ws.Relationships.Project.Data.Id),
+			"teams":            cty.StringVal("NONE"),
+			"variableset_name": cty.StringVal("NONE"),
+			"variables":        cty.StringVal("NONE"),
+		}))
+	}
+	fmt.Printf("%s", hclFile.Bytes())
+	return hclFile
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Println("Error: Terraform organization name not provided")
@@ -100,12 +139,14 @@ func main() {
 	apiToken := getTerraformTokenFromConfig()
 	workspaces := getWorkspaces(BASEURL, apiToken, orgName)
 
-	//fmt.Println(workspaces)
-	for _, workspace := range workspaces {
-		fmt.Printf("ID: %s\n", workspace.ID)
-		fmt.Printf("Name: %s\n", workspace.Attributes.Name)
-		fmt.Printf("Organization: %s\n", workspace.Relationships.Organization.Data.ID)
-		fmt.Println("----------")
-	}
-	fmt.Println(fmt.Sprintf("%v workspaces found", len(workspaces)))
+	// fmt.Println(fmt.Sprintf("%v workspaces found", len(workspaces)))
+
+	// Generate HCL file
+	hcl := generateHCL(workspaces)
+	tfFile, err := os.Create("workspaces.tf")
+	check(err)
+	tfFile.Write(hcl.Bytes())
+	//fmt.Printf("%s", hcl.Bytes())
+
+	// Generate import commands file
 }
