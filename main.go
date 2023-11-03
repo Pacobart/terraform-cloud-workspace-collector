@@ -224,6 +224,14 @@ func getVariableSetsForWorkspace(baseUrl string, token string, organization stri
 	return allVariableSets
 }
 
+func updateVariablesForWorkspace(ws *Workspace, variables []Variable) {
+	ws.Variables = variables
+}
+
+func updateVariableSetsForWorkspace(ws *Workspace, variableSets []VariableSet) {
+	ws.VariableSets = variableSets
+}
+
 func generateHCL(workspaces []Workspace) *hclwrite.File {
 	hclFile := hclwrite.NewEmptyFile()
 	rootBody := hclFile.Body()
@@ -269,14 +277,6 @@ func generateHCL(workspaces []Workspace) *hclwrite.File {
 		}
 	}
 	return hclFile
-}
-
-func updateVariablesForWorkspace(ws *Workspace, variables []Variable) {
-	ws.Variables = variables
-}
-
-func updateVariableSetsForWorkspace(ws *Workspace, variableSets []VariableSet) {
-	ws.VariableSets = variableSets
 }
 
 func main() {
