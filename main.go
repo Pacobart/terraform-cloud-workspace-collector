@@ -40,10 +40,37 @@ type Workspace struct {
 			} `json:"data"`
 		} `json:"project"`
 	} `json:"relationships"`
+	Variables []Variable
 }
 
 type WorkspaceList struct {
 	Data  []Workspace `json:"data"`
+	Links struct {
+		Next string `json:"next"`
+	} `json:"links"`
+}
+
+type Variable struct {
+	ID         string `json:"id"`
+	Attributes struct {
+		Key         string `json:"key"`
+		Value       string `json:"value"`
+		Category    string `json:"category"`
+		Sensitive   bool   `json:"sensitive"`
+		Description string `json:"description"`
+	} `json:"attributes"`
+	Relationships struct {
+		Workspace struct {
+			Data struct {
+				ID   string `json:"id"`
+				Type string `json:"type"`
+			} `json:"data"`
+		} `json:"workspace"`
+	} `json:"relationships"`
+}
+
+type VariableList struct {
+	Data  []Variable `json:"data"`
 	Links struct {
 		Next string `json:"next"`
 	} `json:"links"`
@@ -108,15 +135,48 @@ func getWorkspaces(baseUrl string, token string, organization string) []Workspac
 	return allWorkspaces
 }
 
+func getVariablesForWorkspace(baseUrl string, token string, organization string, workspace string) []Variable {
+	client := &http.Client{}
+
+	var allVariables []Variable
+	nextPageURL := fmt.Sprintf("%s/vars?filter[organization][name]=%s&filter[workspace][name]=%s", baseUrl, organization, workspace)
+
+	for nextPageURL != "" {
+		req, err := http.NewRequest("GET", nextPageURL, nil)
+		check(err)
+
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
+		req.Header.Add("Content-Type", "application/vnd.api+json")
+		resp, err := client.Do(req)
+		check(err)
+		defer resp.Body.Close()
+
+		body, err := io.ReadAll(resp.Body)
+		check(err)
+
+		var variables VariableList
+		err = json.Unmarshal(body, &variables)
+		check(err)
+
+		allVariables = append(allVariables, variables.Data...)
+		nextPageURL = variables.Links.Next
+	}
+
+	return allVariables
+}
+
 func generateHCL(workspaces []Workspace) *hclwrite.File {
 	hclFile := hclwrite.NewEmptyFile()
 	rootBody := hclFile.Body()
 
-	workspacesBlock := rootBody.AppendNewBlock("workspaces =", nil) // TODO: needs to be workspaces = {}. currently returing workspaces {}
+	workspacesBlock := rootBody.AppendNewBlock("workspaces =", nil)
 	workspacesBody := workspacesBlock.Body()
 
 	for _, ws := range workspaces {
-		workspacesBody.SetAttributeValue(ws.Attributes.Name, cty.ObjectVal(map[string]cty.Value{
+		workspaceBlock := workspacesBody.AppendNewBlock(fmt.Sprintf("%s =", ws.Attributes.Name), nil)
+		workspaceBody := workspaceBlock.Body()
+
+		workspaceBody.SetAttributeValue(ws.Attributes.Name, cty.ObjectVal(map[string]cty.Value{
 			"reponame":         cty.StringVal(ws.Attributes.VcsRepo.Identifier),
 			"description":      cty.StringVal(ws.Attributes.Description),
 			"branchname":       cty.StringVal(ws.Attributes.VcsRepo.Branch),
@@ -124,10 +184,32 @@ func generateHCL(workspaces []Workspace) *hclwrite.File {
 			"project_id":       cty.StringVal(ws.Relationships.Project.Data.Id),
 			"teams":            cty.StringVal("NONE"),
 			"variableset_name": cty.StringVal("NONE"),
-			"variables":        cty.StringVal("NONE"),
 		}))
+
+		//teamsBlock := workspaceBody.AppendNewBlock("teams =", nil)
+		//teamsBody := teamsBlock.Body()
+		//for _, team := range ws.Teams {
+		//	teamsBody.SetAttributeValue(variable.Attributes.Key, cty.ObjectVal(map[string]cty.Value{
+		//		"access":       cty.StringVal("somestring"),
+		//	}))
+		//}
+
+		variablesBlock := workspaceBody.AppendNewBlock("variables =", nil)
+		variablesBody := variablesBlock.Body()
+		for _, variable := range ws.Variables {
+			variablesBody.SetAttributeValue(variable.Attributes.Key, cty.ObjectVal(map[string]cty.Value{
+				"value":       cty.StringVal(variable.Attributes.Value),
+				"category":    cty.StringVal(variable.Attributes.Category),
+				"description": cty.StringVal(variable.Attributes.Description),
+				"sensitive":   cty.StringVal(fmt.Sprintf("%t", variable.Attributes.Sensitive)),
+			}))
+		}
 	}
 	return hclFile
+}
+
+func updateVariablesForWorkspace(ws *Workspace, variables []Variable) {
+	ws.Variables = variables
 }
 
 func main() {
@@ -139,6 +221,12 @@ func main() {
 	orgName := os.Args[1]
 	apiToken := getTerraformTokenFromConfig()
 	workspaces := getWorkspaces(BASEURL, apiToken, orgName)
+
+	for i := range workspaces {
+		ws := &workspaces[i]
+		variables := getVariablesForWorkspace(BASEURL, apiToken, orgName, ws.Attributes.Name)
+		updateVariablesForWorkspace(ws, variables)
+	}
 
 	// fmt.Println(fmt.Sprintf("%v workspaces found", len(workspaces)))
 
