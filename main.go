@@ -111,7 +111,7 @@ func getWorkspaces(baseUrl string, token string, organization string) []Workspac
 func generateHCL(workspaces []Workspace) *hclwrite.File {
 	hclFile := hclwrite.NewEmptyFile()
 	rootBody := hclFile.Body()
-	workspacesBlock := rootBody.AppendNewBlock("workspaces", nil)
+	workspacesBlock := rootBody.AppendNewBlock("workspaces", nil) // TODO: needs to be workspaces = {}. currently returing workspaces {}
 	workspacesBody := workspacesBlock.Body()
 	for _, ws := range workspaces {
 		workspacesBody.SetAttributeValue(ws.Attributes.Name, cty.ObjectVal(map[string]cty.Value{
