@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+	"sync"
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/zclconf/go-cty/cty"
@@ -289,14 +290,20 @@ func main() {
 	apiToken := getTerraformTokenFromConfig()
 	workspaces := getWorkspaces(BASEURL, apiToken, orgName)
 
+	var wg sync.WaitGroup
 	for i := range workspaces {
-		ws := &workspaces[i]
-		variables := getVariablesForWorkspace(BASEURL, apiToken, orgName, ws.Attributes.Name)
-		updateVariablesForWorkspace(ws, variables)
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			ws := &workspaces[i]
+			variables := getVariablesForWorkspace(BASEURL, apiToken, orgName, ws.Attributes.Name)
+			updateVariablesForWorkspace(ws, variables)
 
-		variableSets := getVariableSetsForWorkspace(BASEURL, apiToken, orgName, ws.ID)
-		updateVariableSetsForWorkspace(ws, variableSets)
+			variableSets := getVariableSetsForWorkspace(BASEURL, apiToken, orgName, ws.ID)
+			updateVariableSetsForWorkspace(ws, variableSets)
+		}(i)
 	}
+	wg.Wait()
 
 	// fmt.Println(fmt.Sprintf("%v workspaces found", len(workspaces)))
 
