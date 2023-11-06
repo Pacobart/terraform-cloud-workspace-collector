@@ -39,7 +39,7 @@ func check(e error) {
 	}
 }
 
-func getVariablesForWorkspace(baseUrl string, token string, organization string, workspace string) []Variable {
+func GetVariablesForWorkspace(baseUrl string, token string, organization string, workspace string) []Variable {
 	client := &http.Client{}
 
 	var allVariables []Variable
@@ -67,8 +67,4 @@ func getVariablesForWorkspace(baseUrl string, token string, organization string,
 	}
 
 	return allVariables
-}
-
-func updateVariablesForWorkspace(ws *Workspace, variables []Variable) {
-	ws.Variables = variables
 }
