@@ -33,6 +33,12 @@ type VariableList struct {
 	} `json:"links"`
 }
 
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
 func getVariablesForWorkspace(baseUrl string, token string, organization string, workspace string) []Variable {
 	client := &http.Client{}
 
