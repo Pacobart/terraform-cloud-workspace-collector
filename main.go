@@ -200,35 +200,35 @@ func getWorkspaces(baseUrl string, token string, organization string) []Workspac
 	return allWorkspaces
 }
 
-func getVariablesForWorkspace(baseUrl string, token string, organization string, workspace string) []Variable {
-	client := &http.Client{}
+// func getVariablesForWorkspace(baseUrl string, token string, organization string, workspace string) []Variable {
+// 	client := &http.Client{}
 
-	var allVariables []Variable
-	nextPageURL := fmt.Sprintf("%s/vars?filter[organization][name]=%s&filter[workspace][name]=%s", baseUrl, organization, workspace)
+// 	var allVariables []Variable
+// 	nextPageURL := fmt.Sprintf("%s/vars?filter[organization][name]=%s&filter[workspace][name]=%s", baseUrl, organization, workspace)
 
-	for nextPageURL != "" {
-		req, err := http.NewRequest("GET", nextPageURL, nil)
-		check(err)
+// 	for nextPageURL != "" {
+// 		req, err := http.NewRequest("GET", nextPageURL, nil)
+// 		check(err)
 
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
-		req.Header.Add("Content-Type", "application/vnd.api+json")
-		resp, err := client.Do(req)
-		check(err)
-		defer resp.Body.Close()
+// 		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
+// 		req.Header.Add("Content-Type", "application/vnd.api+json")
+// 		resp, err := client.Do(req)
+// 		check(err)
+// 		defer resp.Body.Close()
 
-		body, err := io.ReadAll(resp.Body)
-		check(err)
+// 		body, err := io.ReadAll(resp.Body)
+// 		check(err)
 
-		var variables VariableList
-		err = json.Unmarshal(body, &variables)
-		check(err)
+// 		var variables VariableList
+// 		err = json.Unmarshal(body, &variables)
+// 		check(err)
 
-		allVariables = append(allVariables, variables.Data...)
-		nextPageURL = variables.Links.Next
-	}
+// 		allVariables = append(allVariables, variables.Data...)
+// 		nextPageURL = variables.Links.Next
+// 	}
 
-	return allVariables
-}
+// 	return allVariables
+// }
 
 func getVariableSetsForWorkspace(baseUrl string, token string, organization string, workspaceID string) []VariableSet {
 	client := &http.Client{}
@@ -292,9 +292,9 @@ func getProjectTeamsAccess(baseUrl string, token string, organization string, wo
 	return allTeams
 }
 
-func updateVariablesForWorkspace(ws *Workspace, variables []Variable) {
-	ws.Variables = variables
-}
+// func updateVariablesForWorkspace(ws *Workspace, variables []Variable) {
+// 	ws.Variables = variables
+// }
 
 func updateVariableSetsForWorkspace(ws *Workspace, variableSets []VariableSet) {
 	ws.VariableSets = variableSets
@@ -332,8 +332,8 @@ func generateHCL(workspaces []Workspace) *hclwrite.File {
 		teamsBlock := workspaceBody.AppendNewBlock("teams =", nil)
 		teamsBody := teamsBlock.Body()
 		for _, team := range ws.Teams {
-			teamsBody.SetAttributeValue(team.Attributes.Key, cty.ObjectVal(map[string]cty.Value{
-				"access": cty.StringVal("somestring"),
+			teamsBody.SetAttributeValue(team.Relationships.Team.Data.Id, cty.ObjectVal(map[string]cty.Value{
+				"access": cty.StringVal(team.Attributes.Access),
 			}))
 		}
 
@@ -367,8 +367,8 @@ func main() {
 		go func(i int) {
 			defer wg.Done()
 			ws := &workspaces[i]
-			variables := getVariablesForWorkspace(BASEURL, apiToken, orgName, ws.Attributes.Name)
-			updateVariablesForWorkspace(ws, variables)
+			variables := tfvariables.getVariablesForWorkspace(BASEURL, apiToken, orgName, ws.Attributes.Name)
+			tfvariables.updateVariablesForWorkspace(ws, variables)
 
 			variableSets := getVariableSetsForWorkspace(BASEURL, apiToken, orgName, ws.ID)
 			updateVariableSetsForWorkspace(ws, variableSets)
