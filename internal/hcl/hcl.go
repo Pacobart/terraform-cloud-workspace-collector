@@ -54,10 +54,3 @@ func GenerateHCL(workspaces []tfworkspaces.Workspace) *hclwrite.File {
 	}
 	return hclFile
 }
-
-func GenerateTFImportCommands(workspaces []tfworkspaces.Workspace) string {
-	for _, ws := range workspaces {
-		fmt.Println(ws.Attributes.VcsRepo.Identifier)
-	}
-	return "imports"
-}

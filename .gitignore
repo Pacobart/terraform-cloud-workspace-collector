@@ -1,2 +1,4 @@
 bin
 workspaces.tfvars
+import.sh
+cov.out

@@ -6,6 +6,7 @@ import (
 
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/hcl"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/helpers"
+	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfimports"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfteams"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfvariables"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfvariablesets"
@@ -58,14 +59,14 @@ func main() {
 	fmt.Println(fmt.Sprintf("%v workspaces found", len(workspaces)))
 
 	// Generate HCL file
-	hcl := hcl.GenerateHCL(workspaces)
+	hclData := hcl.GenerateHCL(workspaces)
 	tfFile, err := os.Create("workspaces.tfvars")
 	helpers.Check(err)
-	tfFile.Write(hcl.Bytes())
+	tfFile.Write(hclData.Bytes())
 	//fmt.Printf("%s", hcl.Bytes())
 
 	// Generate import commands file
-	importCommands := hcl.GenerateTFImportCommands(workspaces)
+	importCommands := tfimports.GenerateTFImportCommands(workspaces)
 	importFile, err := os.Create("import.sh")
 	helpers.Check(err)
 	importFile.Write(importCommands)

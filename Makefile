@@ -32,3 +32,9 @@ build:
 
 # Phony targets
 .PHONY: all $(OS_ARCH_PAIRS) clean build
+
+test:
+	go test ./... -coverprofile cov.out
+
+run: 
+	go run main.go
