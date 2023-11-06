@@ -65,4 +65,8 @@ func main() {
 	//fmt.Printf("%s", hcl.Bytes())
 
 	// Generate import commands file
+	importCommands := hcl.GenerateTFImportCommands(workspaces)
+	importFile, err := os.Create("import.sh")
+	helpers.Check(err)
+	importFile.Write(importCommands)
 }
