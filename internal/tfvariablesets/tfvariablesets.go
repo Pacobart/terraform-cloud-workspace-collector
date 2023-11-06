@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/helpers"
+	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/rlhttp"
 )
 
 type VariableSet struct {
@@ -25,6 +27,7 @@ type VariableSetList struct {
 
 func GetVariableSetsForWorkspace(baseUrl string, token string, organization string, workspaceID string) []VariableSet {
 	client := &http.Client{}
+	client.Transport = rlhttp.NewThrottledTransport(1*time.Second, 30, http.DefaultTransport) //allows 30 requests every 1 seconds
 
 	var allVariableSets []VariableSet
 	nextPageURL := fmt.Sprintf("%s/workspaces/%s/varsets", baseUrl, workspaceID)

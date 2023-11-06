@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/helpers"
+	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/rlhttp"
 )
 
 type Variable struct {
@@ -37,6 +39,7 @@ type VariableList struct {
 
 func GetVariablesForWorkspace(baseUrl string, token string, organization string, workspace string) []Variable {
 	client := &http.Client{}
+	client.Transport = rlhttp.NewThrottledTransport(1*time.Second, 30, http.DefaultTransport) //allows 30 requests every 1 seconds
 
 	var allVariables []Variable
 	nextPageURL := fmt.Sprintf("%s/vars?filter[organization][name]=%s&filter[workspace][name]=%s", baseUrl, organization, workspace)

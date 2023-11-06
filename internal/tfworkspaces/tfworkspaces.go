@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/helpers"
-	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/rfhttp"
+	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/rlhttp"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfteams"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfvariables"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfvariablesets"
@@ -56,7 +56,7 @@ type WorkspaceList struct {
 
 func GetWorkspaces(baseUrl string, token string, organization string) []Workspace {
 	client := &http.Client{}
-	client.Transport = rfhttp.NewThrottledTransport(1*time.Second, 30, http.DefaultTransport) //allows 30 requests every 1 seconds
+	client.Transport = rlhttp.NewThrottledTransport(1*time.Second, 30, http.DefaultTransport) //allows 30 requests every 1 seconds
 
 	var allWorkspaces []Workspace
 	nextPageURL := fmt.Sprintf("%s/organizations/%s/workspaces", baseUrl, organization)
