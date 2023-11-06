@@ -7,6 +7,32 @@ import (
 	"net/http"
 )
 
+type Variable struct {
+	ID         string `json:"id"`
+	Attributes struct {
+		Key         string `json:"key"`
+		Value       string `json:"value"`
+		Category    string `json:"category"`
+		Sensitive   bool   `json:"sensitive"`
+		Description string `json:"description"`
+	} `json:"attributes"`
+	Relationships struct {
+		Workspace struct {
+			Data struct {
+				ID   string `json:"id"`
+				Type string `json:"type"`
+			} `json:"data"`
+		} `json:"workspace"`
+	} `json:"relationships"`
+}
+
+type VariableList struct {
+	Data  []Variable `json:"data"`
+	Links struct {
+		Next string `json:"next"`
+	} `json:"links"`
+}
+
 func getVariablesForWorkspace(baseUrl string, token string, organization string, workspace string) []Variable {
 	client := &http.Client{}
 
