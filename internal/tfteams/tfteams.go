@@ -33,10 +33,12 @@ type TeamAccessList struct {
 }
 
 type Team struct {
-	ID         string `json:"id"`
-	Attributes struct {
-		Name string `json:"name"`
-	} `json:"attributes"`
+	Data struct {
+		ID         string `json:"id"`
+		Attributes struct {
+			Name string `json:"name"`
+		} `json:"attributes"`
+	} `json:"data"`
 }
 
 func GetProjectTeamsAccess(baseUrl string, token string, organization string, workspaceID string) []TeamAccess {
@@ -73,8 +75,9 @@ func GetProjectTeamsAccess(baseUrl string, token string, organization string, wo
 
 	for i := range allTeams {
 		team := &allTeams[i]
-		teamName := GetTeam(baseUrl, token, team.Relationships.Team.Data.Id)
-		team.Relationships.Team.Data.Name = teamName.Attributes.Name
+		teamData := GetTeam(baseUrl, token, team.Relationships.Team.Data.Id)
+		teamName := teamData.Data.Attributes.Name
+		team.Relationships.Team.Data.Name = teamName
 	}
 
 	return allTeams
