@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/helpers"
 )
 
 type Team struct {
@@ -35,22 +37,22 @@ func GetProjectTeamsAccess(baseUrl string, token string, organization string, wo
 
 	for nextPageURL != "" {
 		req, err := http.NewRequest("GET", nextPageURL, nil)
-		check(err)
+		helpers.Check(err)
 
 		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
 		req.Header.Add("Content-Type", "application/vnd.api+json")
 		resp, err := client.Do(req)
-		check(err)
+		helpers.Check(err)
 		defer resp.Body.Close()
 
 		body, err := io.ReadAll(resp.Body)
-		check(err)
+		helpers.Check(err)
 		fmt.Println("teams access")
 		fmt.Println(string(body))
 
 		var teams TeamList
 		err = json.Unmarshal(body, &teams)
-		check(err)
+		helpers.Check(err)
 
 		allTeams = append(allTeams, teams.Data...)
 		nextPageURL = teams.Links.Next

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/helpers"
 )
 
 type Variable struct {
@@ -33,12 +35,6 @@ type VariableList struct {
 	} `json:"links"`
 }
 
-func check(e error) {
-	if e != nil {
-		panic(e)
-	}
-}
-
 func GetVariablesForWorkspace(baseUrl string, token string, organization string, workspace string) []Variable {
 	client := &http.Client{}
 
@@ -47,20 +43,20 @@ func GetVariablesForWorkspace(baseUrl string, token string, organization string,
 
 	for nextPageURL != "" {
 		req, err := http.NewRequest("GET", nextPageURL, nil)
-		check(err)
+		helpers.Check(err)
 
 		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
 		req.Header.Add("Content-Type", "application/vnd.api+json")
 		resp, err := client.Do(req)
-		check(err)
+		helpers.Check(err)
 		defer resp.Body.Close()
 
 		body, err := io.ReadAll(resp.Body)
-		check(err)
+		helpers.Check(err)
 
 		var variables VariableList
 		err = json.Unmarshal(body, &variables)
-		check(err)
+		helpers.Check(err)
 
 		allVariables = append(allVariables, variables.Data...)
 		nextPageURL = variables.Links.Next

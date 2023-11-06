@@ -1,5 +1,17 @@
 package tfworkspaces
 
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+
+	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/helpers"
+	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfteams"
+	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfvariables"
+	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfvariablesets"
+)
+
 type Workspace struct {
 	ID         string `json:"id"`
 	Attributes struct {
@@ -29,8 +41,8 @@ type Workspace struct {
 		} `json:"project"`
 	} `json:"relationships"`
 	Variables    []tfvariables.Variable
-	VariableSets []VariableSet
-	Teams        []Team
+	VariableSets []tfvariablesets.VariableSet
+	Teams        []tfteams.Team
 }
 
 type WorkspaceList struct {
@@ -48,19 +60,19 @@ func GetWorkspaces(baseUrl string, token string, organization string) []Workspac
 
 	for nextPageURL != "" {
 		req, err := http.NewRequest("GET", nextPageURL, nil)
-		check(err)
+		helpers.Check(err)
 
 		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
 		resp, err := client.Do(req)
-		check(err)
+		helpers.Check(err)
 		defer resp.Body.Close()
 
 		body, err := io.ReadAll(resp.Body)
-		check(err)
+		helpers.Check(err)
 
 		var workspaces WorkspaceList
 		err = json.Unmarshal(body, &workspaces)
-		check(err)
+		helpers.Check(err)
 
 		allWorkspaces = append(allWorkspaces, workspaces.Data...)
 		nextPageURL = workspaces.Links.Next

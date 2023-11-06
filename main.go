@@ -1,15 +1,16 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
-	"runtime"
 	"sync"
 
+	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/helpers"
+	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfteams"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfvariables"
+	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfvariablesets"
+	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfworkspaces"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/zclconf/go-cty/cty"
 	"golang.org/x/time/rate"
@@ -21,12 +22,6 @@ type RLHTTPClient struct {
 }
 
 var BASEURL = "https://app.terraform.io/api/v2"
-
-func check(e error) {
-	if e != nil {
-		panic(e)
-	}
-}
 
 // func (c *RLHTTPClient) Do(req *http.Request) (*http.Response, error) {
 // 	// Comment out the below 5 lines to turn off ratelimiting
@@ -50,41 +45,7 @@ func check(e error) {
 // 	return c
 // }
 
-func getTerraformTokenFromConfig() string {
-	homeDir, err := os.UserHomeDir()
-	check(err)
-
-	var tfCredFile string
-	if runtime.GOOS == "windows" {
-		tfCredFile = fmt.Sprintf("%s\\AppData\\Roaming\\terraform.d\\credentials.tfrc.json", homeDir)
-	} else {
-		tfCredFile = fmt.Sprintf("%s/.terraform.d/credentials.tfrc.json", homeDir)
-	}
-
-	dat, err := os.Open(tfCredFile)
-	check(err)
-	defer dat.Close()
-
-	byteValue, _ := io.ReadAll(dat)
-	var result map[string]interface{}
-	json.Unmarshal([]byte(byteValue), &result)
-	token := result["credentials"].(map[string]interface{})["app.terraform.io"].(map[string]interface{})["token"].(string)
-	return token
-}
-
-func updateVariablesForWorkspace(ws *Workspace, variables []tfvariables.Variable) {
-	ws.Variables = variables
-}
-
-func updateVariableSetsForWorkspace(ws *Workspace, variableSets []VariableSet) {
-	ws.VariableSets = variableSets
-}
-
-func updateTeamsForWorkspace(ws *Workspace, teams []Team) {
-	ws.Teams = teams
-}
-
-func generateHCL(workspaces []Workspace) *hclwrite.File {
+func generateHCL(workspaces []tfworkspaces.Workspace) *hclwrite.File {
 	hclFile := hclwrite.NewEmptyFile()
 	rootBody := hclFile.Body()
 
@@ -131,6 +92,18 @@ func generateHCL(workspaces []Workspace) *hclwrite.File {
 	return hclFile
 }
 
+func UpdateVariablesForWorkspace(ws *tfworkspaces.Workspace, variables []tfvariables.Variable) {
+	ws.Variables = variables
+}
+
+func UpdateVariableSetsForWorkspace(ws *tfworkspaces.Workspace, variableSets []tfvariablesets.VariableSet) {
+	ws.VariableSets = variableSets
+}
+
+func UpdateTeamsForWorkspace(ws *tfworkspaces.Workspace, teams []tfteams.Team) {
+	ws.Teams = teams
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Println("Error: Terraform organization name not provided")
@@ -138,8 +111,8 @@ func main() {
 	}
 
 	orgName := os.Args[1]
-	apiToken := getTerraformTokenFromConfig()
-	workspaces := getWorkspaces(BASEURL, apiToken, orgName)
+	apiToken := helpers.GetTerraformTokenFromConfig()
+	workspaces := tfworkspaces.GetWorkspaces(BASEURL, apiToken, orgName)
 
 	var wg sync.WaitGroup
 	for i := range workspaces {
@@ -148,13 +121,13 @@ func main() {
 			defer wg.Done()
 			ws := &workspaces[i]
 			variables := tfvariables.GetVariablesForWorkspace(BASEURL, apiToken, orgName, ws.Attributes.Name)
-			updateVariablesForWorkspace(ws, variables)
+			UpdateVariablesForWorkspace(ws, variables)
 
-			variableSets := getVariableSetsForWorkspace(BASEURL, apiToken, orgName, ws.ID)
-			updateVariableSetsForWorkspace(ws, variableSets)
+			variableSets := tfvariablesets.GetVariableSetsForWorkspace(BASEURL, apiToken, orgName, ws.ID)
+			UpdateVariableSetsForWorkspace(ws, variableSets)
 
-			teams := getProjectTeamsAccess(BASEURL, apiToken, orgName, ws.ID)
-			updateTeamsForWorkspace(ws, teams)
+			teams := tfteams.GetProjectTeamsAccess(BASEURL, apiToken, orgName, ws.ID)
+			UpdateTeamsForWorkspace(ws, teams)
 		}(i)
 	}
 	wg.Wait()
@@ -164,7 +137,7 @@ func main() {
 	// Generate HCL file
 	hcl := generateHCL(workspaces)
 	tfFile, err := os.Create("workspaces.tfvars")
-	check(err)
+	helpers.Check(err)
 	tfFile.Write(hcl.Bytes())
 	//fmt.Printf("%s", hcl.Bytes())
 
