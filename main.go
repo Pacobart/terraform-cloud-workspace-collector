@@ -11,7 +11,13 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/zclconf/go-cty/cty"
+	"golang.org/x/time/rate"
 )
+
+type RLHTTPClient struct {
+	client      *http.Client
+	RateLimiter *rate.Limiter
+}
 
 type Workspace struct {
 	ID         string `json:"id"`
@@ -95,8 +101,15 @@ type VariableSetList struct {
 
 type Team struct {
 	Attributes struct {
-		Key string
+		Access string `json:"access"`
 	}
+	Relationships struct {
+		Team struct {
+			Data struct {
+				Id string `json:"id"`
+			} `json:"data"`
+		} `json:"team"`
+	} `json:"relationships"`
 }
 
 type TeamList struct {
@@ -113,6 +126,28 @@ func check(e error) {
 		panic(e)
 	}
 }
+
+// func (c *RLHTTPClient) Do(req *http.Request) (*http.Response, error) {
+// 	// Comment out the below 5 lines to turn off ratelimiting
+// 	ctx := context.Background()
+// 	err := c.Ratelimiter.Wait(ctx) // This is a blocking call. Honors the rate limit
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	resp, err := c.client.Do(req)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return resp, nil
+// }
+
+// func NewClient(rl *rate.Limiter) *RLHTTPClient {
+// 	c := &RLHTTPClient{
+// 		client:      http.DefaultClient,
+// 		Ratelimiter: rl,
+// 	}
+// 	return c
+// }
 
 func getTerraformTokenFromConfig() string {
 	homeDir, err := os.UserHomeDir()
@@ -225,12 +260,48 @@ func getVariableSetsForWorkspace(baseUrl string, token string, organization stri
 	return allVariableSets
 }
 
+func getProjectTeamsAccess(baseUrl string, token string, organization string, workspaceID string) []Team {
+	client := &http.Client{}
+
+	var allTeams []Team
+	nextPageURL := fmt.Sprintf("%s/team-workspaces?filter[workspace][id]=%s", baseUrl, workspaceID)
+
+	for nextPageURL != "" {
+		req, err := http.NewRequest("GET", nextPageURL, nil)
+		check(err)
+
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
+		req.Header.Add("Content-Type", "application/vnd.api+json")
+		resp, err := client.Do(req)
+		check(err)
+		defer resp.Body.Close()
+
+		body, err := io.ReadAll(resp.Body)
+		check(err)
+		fmt.Println("teams access")
+		fmt.Println(string(body))
+
+		var teams TeamList
+		err = json.Unmarshal(body, &teams)
+		check(err)
+
+		allTeams = append(allTeams, teams.Data...)
+		nextPageURL = teams.Links.Next
+	}
+
+	return allTeams
+}
+
 func updateVariablesForWorkspace(ws *Workspace, variables []Variable) {
 	ws.Variables = variables
 }
 
 func updateVariableSetsForWorkspace(ws *Workspace, variableSets []VariableSet) {
 	ws.VariableSets = variableSets
+}
+
+func updateTeamsForWorkspace(ws *Workspace, teams []Team) {
+	ws.Teams = teams
 }
 
 func generateHCL(workspaces []Workspace) *hclwrite.File {
@@ -301,6 +372,9 @@ func main() {
 
 			variableSets := getVariableSetsForWorkspace(BASEURL, apiToken, orgName, ws.ID)
 			updateVariableSetsForWorkspace(ws, variableSets)
+
+			teams := getProjectTeamsAccess(BASEURL, apiToken, orgName, ws.ID)
+			updateTeamsForWorkspace(ws, teams)
 		}(i)
 	}
 	wg.Wait()
