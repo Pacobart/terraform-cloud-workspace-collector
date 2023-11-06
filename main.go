@@ -273,7 +273,7 @@ func generateHCL(workspaces []Workspace) *hclwrite.File {
 				"value":       cty.StringVal(variable.Attributes.Value),
 				"category":    cty.StringVal(variable.Attributes.Category),
 				"description": cty.StringVal(variable.Attributes.Description),
-				"sensitive":   cty.StringVal(fmt.Sprintf("%t", variable.Attributes.Sensitive)),
+				"sensitive":   cty.BoolVal(variable.Attributes.Sensitive),
 			}))
 		}
 	}
