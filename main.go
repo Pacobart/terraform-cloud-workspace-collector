@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"sync"
 
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/hcl"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/helpers"
@@ -23,8 +22,8 @@ func UpdateVariableSetsForWorkspace(ws *tfworkspaces.Workspace, variableSets []t
 	ws.VariableSets = variableSets
 }
 
-func UpdateTeamsForWorkspace(ws *tfworkspaces.Workspace, teams []tfteams.Team) {
-	ws.Teams = teams
+func UpdateTeamsForWorkspace(ws *tfworkspaces.Workspace, teamsAccess []tfteams.TeamAccess) {
+	ws.TeamsAccess = teamsAccess
 }
 
 func main() {
@@ -37,25 +36,26 @@ func main() {
 	apiToken := helpers.GetTerraformTokenFromConfig()
 	workspaces := tfworkspaces.GetWorkspaces(BASEURL, apiToken, orgName)
 
-	var wg sync.WaitGroup
+	// NOTE: disabling concurrency due to rate limiting issues
+	//var wg sync.WaitGroup
 	for i := range workspaces {
-		wg.Add(1)
-		go func(i int) {
-			defer wg.Done()
-			ws := &workspaces[i]
-			variables := tfvariables.GetVariablesForWorkspace(BASEURL, apiToken, orgName, ws.Attributes.Name)
-			UpdateVariablesForWorkspace(ws, variables)
+		//wg.Add(1)
+		//go func(i int) {
+		//defer wg.Done()
+		ws := &workspaces[i]
+		variables := tfvariables.GetVariablesForWorkspace(BASEURL, apiToken, orgName, ws.Attributes.Name)
+		UpdateVariablesForWorkspace(ws, variables)
 
-			variableSets := tfvariablesets.GetVariableSetsForWorkspace(BASEURL, apiToken, orgName, ws.ID)
-			UpdateVariableSetsForWorkspace(ws, variableSets)
+		variableSets := tfvariablesets.GetVariableSetsForWorkspace(BASEURL, apiToken, orgName, ws.ID)
+		UpdateVariableSetsForWorkspace(ws, variableSets)
 
-			teams := tfteams.GetProjectTeamsAccess(BASEURL, apiToken, orgName, ws.ID)
-			UpdateTeamsForWorkspace(ws, teams)
-		}(i)
+		teamsAccess := tfteams.GetProjectTeamsAccess(BASEURL, apiToken, orgName, ws.ID)
+		UpdateTeamsForWorkspace(ws, teamsAccess)
+		//}(i)
 	}
-	wg.Wait()
+	//wg.Wait()
 
-	// fmt.Println(fmt.Sprintf("%v workspaces found", len(workspaces)))
+	fmt.Println(fmt.Sprintf("%v workspaces found", len(workspaces)))
 
 	// Generate HCL file
 	hcl := hcl.GenerateHCL(workspaces)

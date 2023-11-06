@@ -33,11 +33,11 @@ func GenerateHCL(workspaces []tfworkspaces.Workspace) *hclwrite.File {
 			"variableset_name": cty.StringVal(variableSetName), // TODO: only supporting one for now
 		}))
 
-		teamsBlock := workspaceBody.AppendNewBlock("teams =", nil)
-		teamsBody := teamsBlock.Body()
-		for _, team := range ws.Teams {
-			teamsBody.SetAttributeValue(team.Relationships.Team.Data.Id, cty.ObjectVal(map[string]cty.Value{
-				"access": cty.StringVal(team.Attributes.Access),
+		teamsAccessBlock := workspaceBody.AppendNewBlock("teams =", nil)
+		teamsAccessBody := teamsAccessBlock.Body()
+		for _, teamAccess := range ws.TeamsAccess {
+			teamsAccessBody.SetAttributeValue(teamAccess.Relationships.Team.Data.Name, cty.ObjectVal(map[string]cty.Value{
+				"access": cty.StringVal(teamAccess.Attributes.Access),
 			}))
 		}
 

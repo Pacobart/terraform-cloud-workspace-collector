@@ -39,7 +39,7 @@ type VariableList struct {
 
 func GetVariablesForWorkspace(baseUrl string, token string, organization string, workspace string) []Variable {
 	client := &http.Client{}
-	client.Transport = rlhttp.NewThrottledTransport(1*time.Second, 30, http.DefaultTransport) //allows 30 requests every 1 seconds
+	client.Transport = rlhttp.NewThrottledTransport(1*time.Second, 20, http.DefaultTransport) //allows 20 requests every 1 seconds
 
 	var allVariables []Variable
 	nextPageURL := fmt.Sprintf("%s/vars?filter[organization][name]=%s&filter[workspace][name]=%s", baseUrl, organization, workspace)
@@ -53,6 +53,10 @@ func GetVariablesForWorkspace(baseUrl string, token string, organization string,
 		resp, err := client.Do(req)
 		helpers.Check(err)
 		defer resp.Body.Close()
+
+		if resp.StatusCode == http.StatusTooManyRequests {
+			fmt.Printf("Rate limit exceeded when retrieving VariablesForWorkspace  %s\n", workspace)
+		}
 
 		body, err := io.ReadAll(resp.Body)
 		helpers.Check(err)

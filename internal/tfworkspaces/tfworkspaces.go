@@ -44,7 +44,7 @@ type Workspace struct {
 	} `json:"relationships"`
 	Variables    []tfvariables.Variable
 	VariableSets []tfvariablesets.VariableSet
-	Teams        []tfteams.Team
+	TeamsAccess  []tfteams.TeamAccess
 }
 
 type WorkspaceList struct {
@@ -56,7 +56,7 @@ type WorkspaceList struct {
 
 func GetWorkspaces(baseUrl string, token string, organization string) []Workspace {
 	client := &http.Client{}
-	client.Transport = rlhttp.NewThrottledTransport(1*time.Second, 30, http.DefaultTransport) //allows 30 requests every 1 seconds
+	client.Transport = rlhttp.NewThrottledTransport(1*time.Second, 20, http.DefaultTransport) //allows 20 requests every 1 seconds
 
 	var allWorkspaces []Workspace
 	nextPageURL := fmt.Sprintf("%s/organizations/%s/workspaces", baseUrl, organization)
@@ -69,6 +69,10 @@ func GetWorkspaces(baseUrl string, token string, organization string) []Workspac
 		resp, err := client.Do(req)
 		helpers.Check(err)
 		defer resp.Body.Close()
+
+		if resp.StatusCode == http.StatusTooManyRequests {
+			fmt.Printf("Rate limit exceeded when retrieving Workspaces in Organization  %s\n", organization)
+		}
 
 		body, err := io.ReadAll(resp.Body)
 		helpers.Check(err)

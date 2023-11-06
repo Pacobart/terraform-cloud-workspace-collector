@@ -27,7 +27,7 @@ type VariableSetList struct {
 
 func GetVariableSetsForWorkspace(baseUrl string, token string, organization string, workspaceID string) []VariableSet {
 	client := &http.Client{}
-	client.Transport = rlhttp.NewThrottledTransport(1*time.Second, 30, http.DefaultTransport) //allows 30 requests every 1 seconds
+	client.Transport = rlhttp.NewThrottledTransport(1*time.Second, 20, http.DefaultTransport) //allows 20 requests every 1 seconds
 
 	var allVariableSets []VariableSet
 	nextPageURL := fmt.Sprintf("%s/workspaces/%s/varsets", baseUrl, workspaceID)
@@ -41,6 +41,10 @@ func GetVariableSetsForWorkspace(baseUrl string, token string, organization stri
 		resp, err := client.Do(req)
 		helpers.Check(err)
 		defer resp.Body.Close()
+
+		if resp.StatusCode == http.StatusTooManyRequests {
+			fmt.Printf("Rate limit exceeded when retrieving VariableSetsForWorkspace  %s\n", workspaceID)
+		}
 
 		body, err := io.ReadAll(resp.Body)
 		helpers.Check(err)
