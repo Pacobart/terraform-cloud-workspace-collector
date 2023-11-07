@@ -93,12 +93,21 @@ func GetWorkspaces(baseUrl string, token string, organization string) []Workspac
 	// add friendly names to project and agentpool
 	for i := range allWorkspaces {
 		ws := &allWorkspaces[i]
-		project := tfprojects.GetProject(baseUrl, token, ws.Relationships.Project.Data.Id)
-		projectName := project.Data.Attributes.Name
-		ws.Relationships.Project.Data.Name = projectName
+		projectID := ws.Relationships.Project.Data.Id
+		helpers.Debug(fmt.Sprintf("Project ID is %s", projectID))
+		if projectID != "" {
+			project := tfprojects.GetProject(baseUrl, token, projectID)
+			projectName := project.Data.Attributes.Name
+			ws.Relationships.Project.Data.Name = projectName
+		}
 
-		if ws.Relationships.AgentPool.Data.Id != "" {
-			agentpool := tfagentpools.GetAgentPool(baseUrl, token, ws.Relationships.AgentPool.Data.Id)
+		agentPoollID := ws.Relationships.AgentPool.Data.Id
+		if agentPoollID != "" {
+			agentpool := tfagentpools.GetAgentPool(baseUrl, token, agentPoollID)
+			if agentpool.Data.Attributes.Name == "" {
+				fmt.Println(fmt.Sprintf("Agentpool name is empty for agentpool %s. Setting Name to ID", agentpool.Data.ID))
+				agentpool.Data.Attributes.Name = agentpool.Data.ID
+			}
 			agentpoolName := agentpool.Data.Attributes.Name
 			ws.Relationships.AgentPool.Data.Name = agentpoolName
 		}

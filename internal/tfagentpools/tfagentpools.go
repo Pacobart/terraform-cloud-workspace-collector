@@ -35,6 +35,11 @@ func GetAgentPool(baseUrl string, token string, agentPoolID string) AgentPool {
 	helpers.Check(err)
 	defer resp.Body.Close()
 
+	if resp.StatusCode == http.StatusNotFound {
+		fmt.Printf("AgentPool %s not found\n", agentPoolID)
+		return AgentPool{}
+	}
+
 	if resp.StatusCode == http.StatusTooManyRequests {
 		fmt.Printf("Rate limit exceeded when retrieving GetAgentPool  %s\n", agentPoolID)
 	}
