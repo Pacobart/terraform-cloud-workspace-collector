@@ -1,10 +1,6 @@
 # https://github.com/marketplace/actions/run-golangci-lint
 name: golangci-lint
 on:
-  push:
-    branches:
-      - master
-      - main
   pull_request:
 
 permissions:
