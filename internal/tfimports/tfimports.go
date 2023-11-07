@@ -43,7 +43,9 @@ func GenerateTFImportCommands(workspaces []tfworkspaces.Workspace) []byte {
 		// import tfe_variable var
 		importVariables := GenerateImportVariables(ws)
 		importbytes = append(importbytes, importVariables...)
+
 		// import tfe_workspace_variable_set ws_var_set
+
 		// import tfe_team_access team_access
 
 	}
