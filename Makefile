@@ -34,7 +34,7 @@ build:
 .PHONY: all $(OS_ARCH_PAIRS) clean build
 
 test:
-	go test ./... -coverprofile cov.out
+	go test ./... -coverprofile=./cov.out -covermode=atomic -coverpkg=./... 
 
 run: 
 	go run main.go

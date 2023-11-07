@@ -98,7 +98,12 @@ func GetWorkspaces(baseUrl string, token string, organization string) []Workspac
 		if projectID != "" {
 			project := tfprojects.GetProject(baseUrl, token, projectID)
 			projectName := project.Data.Attributes.Name
-			ws.Relationships.Project.Data.Name = projectName
+			if projectName != "" {
+				ws.Relationships.Project.Data.Name = projectName
+			} else {
+				ws.Relationships.Project.Data.Name = projectID
+				fmt.Printf("Project name is empty for project %s. Setting Name to ID\n", projectID)
+			}
 		}
 
 		agentPoollID := ws.Relationships.AgentPool.Data.Id
