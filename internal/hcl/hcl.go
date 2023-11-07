@@ -24,14 +24,12 @@ func GenerateHCLTFVars(workspaces []tfworkspaces.Workspace) *hclwrite.File {
 			variableSetName = ws.VariableSets[0].Attributes.Name
 		}
 
-		workspaceBody.SetAttributeValue(ws.Attributes.Name, cty.ObjectVal(map[string]cty.Value{
-			"reponame":         cty.StringVal(ws.Attributes.VcsRepo.Identifier),
-			"description":      cty.StringVal(ws.Attributes.Description),
-			"branchname":       cty.StringVal(ws.Attributes.VcsRepo.Branch),
-			"agent":            cty.StringVal(ws.Relationships.AgentPool.Data.Id),
-			"project_id":       cty.StringVal(ws.Relationships.Project.Data.Id),
-			"variableset_name": cty.StringVal(variableSetName), // TODO: only supporting one for now
-		}))
+		workspaceBody.SetAttributeValue("reponame", cty.StringVal(ws.Attributes.Name))
+		workspaceBody.SetAttributeValue("description", cty.StringVal(ws.Attributes.Description))
+		workspaceBody.SetAttributeValue("branchname", cty.StringVal(ws.Attributes.VcsRepo.Branch))
+		workspaceBody.SetAttributeValue("agent", cty.StringVal(ws.Relationships.AgentPool.Data.Id))
+		workspaceBody.SetAttributeValue("project_id", cty.StringVal(ws.Relationships.Project.Data.Id))
+		workspaceBody.SetAttributeValue("variableset_name", cty.StringVal(variableSetName)) // TODO: only supporting one for no)
 
 		teamsAccessBlock := workspaceBody.AppendNewBlock("teams =", nil)
 		teamsAccessBody := teamsAccessBlock.Body()
