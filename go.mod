@@ -1,6 +1,6 @@
 module github.com/Pacobart/terraform-cloud-workspace-collector
 
-go 1.21.3
+go 1.21
 
 require (
 	github.com/hashicorp/hcl/v2 v2.19.1
