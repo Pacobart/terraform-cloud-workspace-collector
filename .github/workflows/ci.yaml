@@ -1,9 +1,9 @@
 name: Go
 on: 
-  - push
-  - pull_requests:
-      branches:
-        - main
+  pull_requests:
+    branches:
+      - main
+  push:
 
 jobs:
   build:
