@@ -76,6 +76,7 @@ func GetWorkspaces(baseUrl string, token string, organization string) []Workspac
 
 		body, err := io.ReadAll(resp.Body)
 		helpers.Check(err)
+		helpers.Debug(string(body))
 
 		var workspaces WorkspaceList
 		err = json.Unmarshal(body, &workspaces)

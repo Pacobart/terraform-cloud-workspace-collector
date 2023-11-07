@@ -11,6 +11,9 @@ This will create the following files:
 - `imports.tf` file with all the import blocks for use with terraform 1.5 and newer
 - `import.sh` file with all the import CLI commands for use with terraform 1.4 and older
 
+## Flags
+- `--debug` | `-d` = Debug mode. Prints api calls to std to determine if there are issues in responses
+
 ## Notes
 
 This expects the terraform credentials token to exist in the following locations based on Operating System and currently only supports "app.terraform.io"

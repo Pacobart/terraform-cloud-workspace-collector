@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"slices"
 
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/hcl"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/helpers"
@@ -13,6 +14,7 @@ import (
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfworkspaces"
 )
 
+var DEBUG = false
 var BASEURL = "https://app.terraform.io/api/v2"
 
 func UpdateVariablesForWorkspace(ws *tfworkspaces.Workspace, variables []tfvariables.Variable) {
@@ -31,6 +33,10 @@ func main() {
 	if len(os.Args) < 2 {
 		fmt.Println("Error: Terraform organization name not provided")
 		os.Exit(1)
+	}
+
+	if slices.Contains(os.Args, "--debug") || slices.Contains(os.Args, "-d") {
+		helpers.DEBUG = true
 	}
 
 	orgName := os.Args[1]
