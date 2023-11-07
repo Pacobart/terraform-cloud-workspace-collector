@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"os"
+	"slices"
 
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/hcl"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/helpers"
+	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfimports"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfteams"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfvariables"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfvariablesets"
@@ -30,6 +32,10 @@ func main() {
 	if len(os.Args) < 2 {
 		fmt.Println("Error: Terraform organization name not provided")
 		os.Exit(1)
+	}
+
+	if slices.Contains(os.Args, "--debug") || slices.Contains(os.Args, "-d") {
+		helpers.DEBUG = true
 	}
 
 	orgName := os.Args[1]
@@ -57,12 +63,22 @@ func main() {
 
 	fmt.Println(fmt.Sprintf("%v workspaces found", len(workspaces)))
 
-	// Generate HCL file
-	hcl := hcl.GenerateHCL(workspaces)
-	tfFile, err := os.Create("workspaces.tfvars")
+	// Generate HCL TFVars file
+	hclTFVars := hcl.GenerateHCLTFVars(workspaces)
+	hclTFVarsFile, err := os.Create("workspaces.tfvars")
 	helpers.Check(err)
-	tfFile.Write(hcl.Bytes())
+	hclTFVarsFile.Write(hclTFVars.Bytes())
 	//fmt.Printf("%s", hcl.Bytes())
 
-	// Generate import commands file
+	// Generate HCL Imports files
+	hclTFImports := hcl.GenerateHCLTFImports(workspaces)
+	hclTFImportsFile, err := os.Create("imports.tf")
+	helpers.Check(err)
+	hclTFImportsFile.Write(hclTFImports.Bytes())
+
+	// Generate CLI import commands file
+	importCommands := tfimports.GenerateTFImportCommands(workspaces)
+	importFile, err := os.Create("import.sh")
+	helpers.Check(err)
+	importFile.Write(importCommands)
 }
