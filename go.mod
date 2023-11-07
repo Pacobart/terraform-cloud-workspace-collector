@@ -6,6 +6,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.19.1
 	github.com/zclconf/go-cty v1.14.1
 	golang.org/x/time v0.4.0
+	golang.org/x/exp/slices v0.0.0
 )
 
 require (
