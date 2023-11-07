@@ -1,5 +1,5 @@
 # https://github.com/marketplace/actions/go-release-binary
-on: release
+on: main
 name: Build Release
 jobs:
   release-linux-386:
