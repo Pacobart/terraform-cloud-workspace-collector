@@ -6,7 +6,10 @@ collect terraform cloud workspace info
 
 `tfc-collect <terraform_organization_name>
 
-This will create `workspaces.tfvars` file with all the workspaces added as a map of maps.
+This will create the following files:
+- `workspaces.tfvars` file with all the workspaces added as a map of maps.
+- `imports.tf` file with all the import blocks for use with terraform 1.5 and newer
+- `import.sh` file with all the import CLI commands for use with terraform 1.4 and older
 
 ## Notes
 
