@@ -14,7 +14,6 @@ import (
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfworkspaces"
 )
 
-var DEBUG = false
 var BASEURL = "https://app.terraform.io/api/v2"
 
 func UpdateVariablesForWorkspace(ws *tfworkspaces.Workspace, variables []tfvariables.Variable) {
