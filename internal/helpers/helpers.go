@@ -18,7 +18,7 @@ func Check(e error) {
 
 func Debug(s string) {
 	if DEBUG {
-		fmt.Println(fmt.Sprintf("---------\n%s\n---------\n", s))
+		fmt.Printf("---------\n%s\n---------\n\n", s)
 	}
 }
 
@@ -39,7 +39,9 @@ func GetTerraformTokenFromConfig() string {
 
 	byteValue, _ := io.ReadAll(dat)
 	var result map[string]interface{}
-	json.Unmarshal([]byte(byteValue), &result)
+	err = json.Unmarshal([]byte(byteValue), &result)
+	Check(err)
+
 	token := result["credentials"].(map[string]interface{})["app.terraform.io"].(map[string]interface{})["token"].(string)
 	return token
 }

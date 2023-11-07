@@ -61,24 +61,26 @@ func main() {
 	}
 	//wg.Wait()
 
-	fmt.Println(fmt.Sprintf("%v workspaces found", len(workspaces)))
+	fmt.Printf("%v workspaces found\n", len(workspaces))
 
 	// Generate HCL TFVars file
 	hclTFVars := hcl.GenerateHCLTFVars(workspaces)
 	hclTFVarsFile, err := os.Create("workspaces.tfvars")
 	helpers.Check(err)
-	hclTFVarsFile.Write(hclTFVars.Bytes())
-	//fmt.Printf("%s", hcl.Bytes())
+	_, err = hclTFVarsFile.Write(hclTFVars.Bytes())
+	helpers.Check(err)
 
 	// Generate HCL Imports files
 	hclTFImports := hcl.GenerateHCLTFImports(workspaces)
 	hclTFImportsFile, err := os.Create("imports.tf")
 	helpers.Check(err)
-	hclTFImportsFile.Write(hclTFImports.Bytes())
+	_, err = hclTFImportsFile.Write(hclTFImports.Bytes())
+	helpers.Check(err)
 
 	// Generate CLI import commands file
 	importCommands := tfimports.GenerateTFImportCommands(workspaces)
 	importFile, err := os.Create("import.sh")
 	helpers.Check(err)
-	importFile.Write(importCommands)
+	_, err = importFile.Write(importCommands)
+	helpers.Check(err)
 }

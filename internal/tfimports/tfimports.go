@@ -40,7 +40,7 @@ func GenerateImportVariableSets(workspace tfworkspaces.Workspace) []byte {
 	var importVariableSetBytes []byte
 	if workspace.VariableSets != nil {
 		variableSetName := workspace.VariableSets[0].Attributes.Name
-		importKey := fmt.Sprintf("%s", workspace.Attributes.Name)
+		importKey := workspace.Attributes.Name
 		importValue := fmt.Sprintf("%s/%s/%s", workspace.Relationships.Organization.Data.ID, workspace.Attributes.Name, variableSetName) // org/workspace/variable_set_id
 		importResource := fmt.Sprintf("\"%s.%s[\\\"%s\\\"]\"", resource, resourceIdentifier, importKey)
 		importCommand := fmt.Sprintf("%s %s %s\n", TERRAFORMIMPORTCOMMAND, importResource, importValue)

@@ -105,7 +105,7 @@ func GetWorkspaces(baseUrl string, token string, organization string) []Workspac
 		if agentPoollID != "" {
 			agentpool := tfagentpools.GetAgentPool(baseUrl, token, agentPoollID)
 			if agentpool.Data.Attributes.Name == "" {
-				fmt.Println(fmt.Sprintf("Agentpool name is empty for agentpool %s. Setting Name to ID", agentpool.Data.ID))
+				fmt.Printf("Agentpool name is empty for agentpool %s. Setting Name to ID\n", agentpool.Data.ID)
 				agentpool.Data.Attributes.Name = agentpool.Data.ID
 			}
 			agentpoolName := agentpool.Data.Attributes.Name
