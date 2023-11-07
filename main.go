@@ -3,7 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
-	"slices"
+
+	"golang.org/x/exp/slices"
 
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/hcl"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/helpers"
