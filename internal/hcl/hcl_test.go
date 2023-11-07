@@ -17,8 +17,10 @@ func TestGenerateHCLTFVars(t *testing.T) {
 	workspace.Attributes.VcsRepo.Branch = "main"
 	workspace.Attributes.VcsRepo.Identifier = "https://github.com/Pacobart/terraform-cloud-workspace-collector.git"
 	workspace.Relationships.Organization.Data.ID = "org-tv9993939393fupk"
-	workspace.Relationships.AgentPool.Data.Id = "pool10x"
+	workspace.Relationships.AgentPool.Data.Id = "agent-pool10x"
+	workspace.Relationships.AgentPool.Data.Name = "pool10x"
 	workspace.Relationships.Project.Data.Id = "proj-tv9993939393fupk"
+	workspace.Relationships.Project.Data.Name = "Default Project"
 	var variable1 tfvariables.Variable
 	variable1.ID = "var-tv9993939393fupk"
 	variable1.Attributes.Key = "my-var"
@@ -31,7 +33,7 @@ func TestGenerateHCLTFVars(t *testing.T) {
     description      = "My awesome workspace"
     branchname       = "main"
     agent            = "pool10x"
-    project_id       = "proj-tv9993939393fupk"
+    project_id       = "Default Project"
     variableset_name = ""
     teams = {
     }

@@ -4,10 +4,10 @@ permissions:
   contents: read
 on: 
   pull_request:
-  push:
-    branches-ignore:
-      - master
-      - main
+  #push:
+  #  branches-ignore:
+  #    - master
+  #    - main
 
 jobs:
   test:
@@ -15,6 +15,7 @@ jobs:
       matrix:
         go: ['1.21']
         os: [ubuntu-latest]
+        #os: [ubuntu-latest, macos-latest, windows-latest]
     name: test and coverage
     runs-on: ${{ matrix.os }}
     steps:
@@ -27,13 +28,10 @@ jobs:
       - name: check test coverage
         uses: vladopajic/go-test-coverage@v2
         with:
-          # Configure action using config file (option 1)
-          config: ./.testcoverage.yml
-          
-          # Configure action by specifying input parameters individually (option 2).
-          # If you are using config file you shouldn't use these parameters.
           profile: cover.out
           local-prefix: github.com/Pacobart/terraform-cloud-workspace-collector
           #threshold-file: 80 # The minimum coverage that each file should have
           #threshold-package: 80 # The minimum coverage that each package should have
           #threshold-total: 95 # The minimum total coverage project should have
+          git-branch: badges
+          git-token: ${{ github.ref_name == 'main' && secrets.GITHUB_TOKEN || '' }}
