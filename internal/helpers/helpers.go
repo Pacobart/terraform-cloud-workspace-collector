@@ -18,7 +18,7 @@ func Check(e error) {
 
 func Debug(s string) {
 	if DEBUG {
-		fmt.Println(s)
+		fmt.Println(fmt.Sprintf("---------\n%s\n---------\n", s))
 	}
 }
 

@@ -28,7 +28,7 @@ func GenerateHCLTFVars(workspaces []tfworkspaces.Workspace) *hclwrite.File {
 		workspaceBody.SetAttributeValue("description", cty.StringVal(ws.Attributes.Description))
 		workspaceBody.SetAttributeValue("branchname", cty.StringVal(ws.Attributes.VcsRepo.Branch))
 		workspaceBody.SetAttributeValue("agent", cty.StringVal(ws.Relationships.AgentPool.Data.Id))
-		workspaceBody.SetAttributeValue("project_id", cty.StringVal(ws.Relationships.Project.Data.Id))
+		workspaceBody.SetAttributeValue("project_id", cty.StringVal(ws.Relationships.Project.Data.Name))
 		workspaceBody.SetAttributeValue("variableset_name", cty.StringVal(variableSetName)) // TODO: only supporting one for no)
 
 		teamsAccessBlock := workspaceBody.AppendNewBlock("teams =", nil)

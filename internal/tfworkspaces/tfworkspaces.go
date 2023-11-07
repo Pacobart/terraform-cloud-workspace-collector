@@ -9,6 +9,8 @@ import (
 
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/helpers"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/rlhttp"
+	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfagentpools"
+	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfprojects"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfteams"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfvariables"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfvariablesets"
@@ -33,12 +35,14 @@ type Workspace struct {
 		} `json:"organization"`
 		AgentPool struct {
 			Data struct {
-				Id string `json:"id"`
+				Id   string `json:"id"`
+				Name string
 			} `json:"data"`
 		} `json:"agent-pool"`
 		Project struct {
 			Data struct {
-				Id string `json:"id"`
+				Id   string `json:"id"`
+				Name string
 			} `json:"data"`
 		} `json:"project"`
 	} `json:"relationships"`
@@ -84,6 +88,20 @@ func GetWorkspaces(baseUrl string, token string, organization string) []Workspac
 
 		allWorkspaces = append(allWorkspaces, workspaces.Data...)
 		nextPageURL = workspaces.Links.Next
+	}
+
+	// add friendly names to project and agentpool
+	for i := range allWorkspaces {
+		ws := &allWorkspaces[i]
+		project := tfprojects.GetProject(baseUrl, token, ws.Relationships.Project.Data.Id)
+		projectName := project.Data.Attributes.Name
+		ws.Relationships.Project.Data.Name = projectName
+
+		if ws.Relationships.AgentPool.Data.Id != "" {
+			agentpool := tfagentpools.GetAgentPool(baseUrl, token, ws.Relationships.AgentPool.Data.Id)
+			agentpoolName := agentpool.Data.Attributes.Name
+			ws.Relationships.AgentPool.Data.Name = agentpoolName
+		}
 	}
 
 	return allWorkspaces
