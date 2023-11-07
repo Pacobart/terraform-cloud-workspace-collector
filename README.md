@@ -31,3 +31,7 @@ Example credentials file:
   }
 }
 ```
+
+## Troubleshooting / Known Issues
+
+If the user doesn't have the correct permissions in Terraform Cloud the Agent Pools will error during lookups. A message will show up in terminal `AgentPool apool-XXX not found`
