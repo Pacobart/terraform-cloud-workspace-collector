@@ -9,6 +9,11 @@ import (
 
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/helpers"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/rlhttp"
+<<<<<<< HEAD
+=======
+	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfagentpools"
+	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfprojects"
+>>>>>>> main
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfteams"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfvariables"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfvariablesets"
@@ -33,12 +38,22 @@ type Workspace struct {
 		} `json:"organization"`
 		AgentPool struct {
 			Data struct {
+<<<<<<< HEAD
 				Id string `json:"id"`
+=======
+				Id   string `json:"id"`
+				Name string
+>>>>>>> main
 			} `json:"data"`
 		} `json:"agent-pool"`
 		Project struct {
 			Data struct {
+<<<<<<< HEAD
 				Id string `json:"id"`
+=======
+				Id   string `json:"id"`
+				Name string
+>>>>>>> main
 			} `json:"data"`
 		} `json:"project"`
 	} `json:"relationships"`
@@ -76,6 +91,10 @@ func GetWorkspaces(baseUrl string, token string, organization string) []Workspac
 
 		body, err := io.ReadAll(resp.Body)
 		helpers.Check(err)
+<<<<<<< HEAD
+=======
+		helpers.Debug(string(body))
+>>>>>>> main
 
 		var workspaces WorkspaceList
 		err = json.Unmarshal(body, &workspaces)
@@ -85,5 +104,36 @@ func GetWorkspaces(baseUrl string, token string, organization string) []Workspac
 		nextPageURL = workspaces.Links.Next
 	}
 
+<<<<<<< HEAD
+=======
+	// add friendly names to project and agentpool
+	for i := range allWorkspaces {
+		ws := &allWorkspaces[i]
+		projectID := ws.Relationships.Project.Data.Id
+		helpers.Debug(fmt.Sprintf("Project ID is %s", projectID))
+		if projectID != "" {
+			project := tfprojects.GetProject(baseUrl, token, projectID)
+			projectName := project.Data.Attributes.Name
+			if projectName != "" {
+				ws.Relationships.Project.Data.Name = projectName
+			} else {
+				ws.Relationships.Project.Data.Name = projectID
+				fmt.Printf("Project name is empty for project %s. Setting Name to ID\n", projectID)
+			}
+		}
+
+		agentPoollID := ws.Relationships.AgentPool.Data.Id
+		if agentPoollID != "" {
+			agentpool := tfagentpools.GetAgentPool(baseUrl, token, agentPoollID)
+			if agentpool.Data.Attributes.Name == "" {
+				fmt.Printf("Agentpool name is empty for agentpool %s. Setting Name to ID\n", agentpool.Data.ID)
+				agentpool.Data.Attributes.Name = agentpool.Data.ID
+			}
+			agentpoolName := agentpool.Data.Attributes.Name
+			ws.Relationships.AgentPool.Data.Name = agentpoolName
+		}
+	}
+
+>>>>>>> main
 	return allWorkspaces
 }

@@ -8,12 +8,26 @@ import (
 	"runtime"
 )
 
+<<<<<<< HEAD
+=======
+var DEBUG = false
+
+>>>>>>> main
 func Check(e error) {
 	if e != nil {
 		panic(e)
 	}
 }
 
+<<<<<<< HEAD
+=======
+func Debug(s string) {
+	if DEBUG {
+		fmt.Printf("---------\n%s\n---------\n\n", s)
+	}
+}
+
+>>>>>>> main
 func GetTerraformTokenFromConfig() string {
 	homeDir, err := os.UserHomeDir()
 	Check(err)
@@ -31,7 +45,13 @@ func GetTerraformTokenFromConfig() string {
 
 	byteValue, _ := io.ReadAll(dat)
 	var result map[string]interface{}
+<<<<<<< HEAD
 	json.Unmarshal([]byte(byteValue), &result)
+=======
+	err = json.Unmarshal([]byte(byteValue), &result)
+	Check(err)
+
+>>>>>>> main
 	token := result["credentials"].(map[string]interface{})["app.terraform.io"].(map[string]interface{})["token"].(string)
 	return token
 }
