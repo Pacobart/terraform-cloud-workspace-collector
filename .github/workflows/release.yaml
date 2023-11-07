@@ -1,3 +1,4 @@
+# https://github.com/marketplace/actions/go-release-binary
 on: release
 name: Build Release
 jobs:
