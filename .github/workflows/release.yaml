@@ -1,7 +1,7 @@
 # https://github.com/marketplace/actions/github-tag
 # https://github.com/marketplace/actions/github-action-build
 # https://github.com/marketplace/actions/github-action-publish-binaries
-name: Reelase
+name: Release
 permissions:
   contents: write
 on:
