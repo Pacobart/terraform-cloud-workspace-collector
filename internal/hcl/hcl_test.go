@@ -15,7 +15,7 @@ func TestGenerateHCLTFVars(t *testing.T) {
 	workspace.Attributes.Name = "my-workspace"
 	workspace.Attributes.Description = "My awesome workspace"
 	workspace.Attributes.VcsRepo.Branch = "main"
-	workspace.Attributes.VcsRepo.Identifier = "https://github.com/Pacobart/terraform-cloud-workspace-collector.git"
+	workspace.Attributes.VcsRepo.Identifier = "Pacobart/terraform-cloud-workspace-collector"
 	workspace.Relationships.Organization.Data.ID = "org-tv9993939393fupk"
 	workspace.Relationships.AgentPool.Data.Id = "agent-pool10x"
 	workspace.Relationships.AgentPool.Data.Name = "pool10x"
@@ -29,7 +29,7 @@ func TestGenerateHCLTFVars(t *testing.T) {
 
 	wantString := `workspaces = {
   my-workspace = {
-    reponame         = "my-workspace"
+    reponame         = "Pacobart/terraform-cloud-workspace-collector"
     description      = "My awesome workspace"
     branchname       = "main"
     agent            = "pool10x"

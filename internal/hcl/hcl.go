@@ -24,7 +24,7 @@ func GenerateHCLTFVars(workspaces []tfworkspaces.Workspace) *hclwrite.File {
 			variableSetName = ws.VariableSets[0].Attributes.Name
 		}
 
-		workspaceBody.SetAttributeValue("reponame", cty.StringVal(ws.Attributes.Name))
+		workspaceBody.SetAttributeValue("reponame", cty.StringVal(ws.Attributes.VcsRepo.Identifier))
 		workspaceBody.SetAttributeValue("description", cty.StringVal(ws.Attributes.Description))
 		workspaceBody.SetAttributeValue("branchname", cty.StringVal(ws.Attributes.VcsRepo.Branch))
 		workspaceBody.SetAttributeValue("agent", cty.StringVal(ws.Relationships.AgentPool.Data.Name))
