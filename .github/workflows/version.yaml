@@ -9,7 +9,10 @@ on:
       - binaries
 jobs:
   build:
+    name: Create GitHub Release
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag_version.outputs.new_tag }}
     steps:
       - uses: actions/checkout@v3
       - name: Bump version and push tag
@@ -41,5 +44,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          releaseId: ${{ needs.build.steps.tag_version.outputs.new_tag }}
+          releaseId: ${{ needs.build.outputs.tag }}
           args: 'bin/tf-collect*'
