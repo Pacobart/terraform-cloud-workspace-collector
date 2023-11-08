@@ -8,11 +8,7 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-<<<<<<< HEAD
-func GenerateHCL(workspaces []tfworkspaces.Workspace) *hclwrite.File {
-=======
 func GenerateHCLTFVars(workspaces []tfworkspaces.Workspace) *hclwrite.File {
->>>>>>> main
 	hclFile := hclwrite.NewEmptyFile()
 	rootBody := hclFile.Body()
 
@@ -28,23 +24,12 @@ func GenerateHCLTFVars(workspaces []tfworkspaces.Workspace) *hclwrite.File {
 			variableSetName = ws.VariableSets[0].Attributes.Name
 		}
 
-<<<<<<< HEAD
-		workspaceBody.SetAttributeValue(ws.Attributes.Name, cty.ObjectVal(map[string]cty.Value{
-			"reponame":         cty.StringVal(ws.Attributes.VcsRepo.Identifier),
-			"description":      cty.StringVal(ws.Attributes.Description),
-			"branchname":       cty.StringVal(ws.Attributes.VcsRepo.Branch),
-			"agent":            cty.StringVal(ws.Relationships.AgentPool.Data.Id),
-			"project_id":       cty.StringVal(ws.Relationships.Project.Data.Id),
-			"variableset_name": cty.StringVal(variableSetName), // TODO: only supporting one for now
-		}))
-=======
 		workspaceBody.SetAttributeValue("reponame", cty.StringVal(ws.Attributes.Name))
 		workspaceBody.SetAttributeValue("description", cty.StringVal(ws.Attributes.Description))
 		workspaceBody.SetAttributeValue("branchname", cty.StringVal(ws.Attributes.VcsRepo.Branch))
 		workspaceBody.SetAttributeValue("agent", cty.StringVal(ws.Relationships.AgentPool.Data.Name))
 		workspaceBody.SetAttributeValue("project_id", cty.StringVal(ws.Relationships.Project.Data.Name))
 		workspaceBody.SetAttributeValue("variableset_name", cty.StringVal(variableSetName)) // TODO: only supporting one for no)
->>>>>>> main
 
 		teamsAccessBlock := workspaceBody.AppendNewBlock("teams =", nil)
 		teamsAccessBody := teamsAccessBlock.Body()
@@ -67,8 +52,6 @@ func GenerateHCLTFVars(workspaces []tfworkspaces.Workspace) *hclwrite.File {
 	}
 	return hclFile
 }
-<<<<<<< HEAD
-=======
 
 func GenerateHCLTFImports(workspaces []tfworkspaces.Workspace) *hclwrite.File {
 	hclFile := hclwrite.NewEmptyFile()
@@ -121,4 +104,3 @@ func GenerateHCLTFImports(workspaces []tfworkspaces.Workspace) *hclwrite.File {
 	}
 	return hclFile
 }
->>>>>>> main
