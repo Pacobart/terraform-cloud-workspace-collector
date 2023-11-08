@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfworkspaces"
+	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -60,21 +61,37 @@ func GenerateHCLTFImports(workspaces []tfworkspaces.Workspace) *hclwrite.File {
 	for _, ws := range workspaces {
 
 		// import tf_workspace managed_ws
-		workspaceResource := fmt.Sprintf("tfe_workspace.managed_ws[\"%s\"]", ws.Attributes.Name)
+		workspaceResource := fmt.Sprintf("managed_ws[\"%s\"]", ws.Attributes.Name)
 		workspaceID := ws.ID
 		workspaceBlock := rootBody.AppendNewBlock("import", nil)
 		workspaceBody := workspaceBlock.Body()
-		workspaceBody.SetAttributeValue("to", cty.StringVal(workspaceResource))
+
+		//workspaceBody.SetAttributeValue("to", cty.StringVal(workspaceResource).AsString())
+		workspaceBody.SetAttributeTraversal("to", hcl.Traversal{
+			hcl.TraverseRoot{
+				Name: "tfe_workspace",
+			},
+			hcl.TraverseAttr{
+				Name: workspaceResource,
+			},
+		})
 		workspaceBody.SetAttributeValue("id", cty.StringVal(workspaceID))
 		rootBody.AppendNewline()
 
 		// import tfe_variable var
 		for _, variable := range ws.Variables {
-			variableResource := fmt.Sprintf("tfe_variable.var[\"%s-%s\"]", ws.Attributes.Name, variable.Attributes.Key)
+			variableResource := fmt.Sprintf("var[\"%s-%s\"]", ws.Attributes.Name, variable.Attributes.Key)
 			variableID := fmt.Sprintf("%s/%s/%s", ws.Relationships.Organization.Data.ID, ws.Attributes.Name, variable.ID) // org/workspace/variable_id
 			variableBlock := rootBody.AppendNewBlock("import", nil)
 			variableBody := variableBlock.Body()
-			variableBody.SetAttributeValue("to", cty.StringVal(variableResource))
+			variableBody.SetAttributeTraversal("to", hcl.Traversal{
+				hcl.TraverseRoot{
+					Name: "tfe_variable",
+				},
+				hcl.TraverseAttr{
+					Name: variableResource,
+				},
+			})
 			variableBody.SetAttributeValue("id", cty.StringVal(variableID))
 			rootBody.AppendNewline()
 		}
@@ -82,22 +99,36 @@ func GenerateHCLTFImports(workspaces []tfworkspaces.Workspace) *hclwrite.File {
 		// import tfe_workspace_variable_set ws_var_set
 		if ws.VariableSets != nil {
 			variableSetName := ws.VariableSets[0].Attributes.Name
-			variableSetResource := fmt.Sprintf("tfe_workspace_variable_set.ws_var_set[\"%s\"]", ws.Attributes.Name)
+			variableSetResource := fmt.Sprintf("ws_var_set[\"%s\"]", ws.Attributes.Name)
 			variableSetID := fmt.Sprintf("%s/%s/%s", ws.Relationships.Organization.Data.ID, ws.Attributes.Name, variableSetName) // org/workspace/variable_set_id
 			variableSetBlock := rootBody.AppendNewBlock("import", nil)
 			variableSetBody := variableSetBlock.Body()
-			variableSetBody.SetAttributeValue("to", cty.StringVal(variableSetResource))
+			variableSetBody.SetAttributeTraversal("to", hcl.Traversal{
+				hcl.TraverseRoot{
+					Name: "tfe_workspace_variable_set",
+				},
+				hcl.TraverseAttr{
+					Name: variableSetResource,
+				},
+			})
 			variableSetBody.SetAttributeValue("id", cty.StringVal(variableSetID))
 			rootBody.AppendNewline()
 		}
 
 		// import tfe_team_access team_access
 		for _, teamAccess := range ws.TeamsAccess {
-			teamAccessResource := fmt.Sprintf("tfe_team_access.team_access[\"%s-%s\"]", ws.Attributes.Name, teamAccess.Relationships.Team.Data.Name)
+			teamAccessResource := fmt.Sprintf("team_access[\"%s-%s\"]", ws.Attributes.Name, teamAccess.Relationships.Team.Data.Name)
 			teamAccessID := fmt.Sprintf("%s/%s/%s", ws.Relationships.Organization.Data.ID, ws.Attributes.Name, teamAccess.Relationships.Team.Data.Id) // org/workspace/team_access_id
 			teamAccessBlock := rootBody.AppendNewBlock("import", nil)
 			teamAccessBody := teamAccessBlock.Body()
-			teamAccessBody.SetAttributeValue("to", cty.StringVal(teamAccessResource))
+			teamAccessBody.SetAttributeTraversal("to", hcl.Traversal{
+				hcl.TraverseRoot{
+					Name: "tfe_team_access",
+				},
+				hcl.TraverseAttr{
+					Name: teamAccessResource,
+				},
+			})
 			teamAccessBody.SetAttributeValue("id", cty.StringVal(teamAccessID))
 			rootBody.AppendNewline()
 		}
