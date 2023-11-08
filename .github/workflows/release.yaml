@@ -1,6 +1,6 @@
 # https://github.com/marketplace/actions/github-tag
 # https://github.com/marketplace/actions/github-action-build
-# https://github.com/marketplace/actions/github-action-publish-binaries
+# https://github.com/marketplace/actions/gh-release
 name: Release
 permissions:
   contents: write
@@ -8,7 +8,6 @@ on:
   push:
     branches:
       - main
-      - artifacts
 jobs:
   build:
     name: Create GitHub Release
@@ -39,22 +38,8 @@ jobs:
         uses: skx/github-action-build@master
         with:
           builder: .github/build
-      - name: show me directory
-        run: ls -la bin
       - name: Release
         uses: softprops/action-gh-release@v1
-        #if: startsWith(github.ref, 'refs/tags/')
         with:
           tag_name: ${{ needs.build.outputs.tag }}
           files: 'bin/*'
-      #- name: Upload artifacts
-      #  uses: actions/upload-artifact@v3
-      #  with:
-      #    path: bin/
-      #- name: Upload the artifacts
-      #  uses: skx/github-action-publish-binaries@master
-      #  env:
-      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #  with:
-      #    releaseId: ${{ needs.build.outputs.tag }}
-      #    args: './bin/*'
