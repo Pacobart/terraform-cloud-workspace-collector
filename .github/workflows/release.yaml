@@ -1,7 +1,7 @@
 # https://github.com/marketplace/actions/github-action-publish-binaries
 on:
   release:
-    types: [created]
+    types: [created, published]
 name: Handle Release
 jobs:
   generate:
