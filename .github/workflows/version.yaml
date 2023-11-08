@@ -35,9 +35,7 @@ jobs:
         with:
           builder: .github/build
       - name: show me directory
-        run: |
-              ls -la
-              ls -la bin/
+        run: ls -la bin
       - name: Upload the artifacts
         uses: skx/github-action-publish-binaries@master
         env:
