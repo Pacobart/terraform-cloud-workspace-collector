@@ -45,6 +45,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         #if: startsWith(github.ref, 'refs/tags/')
         with:
+          tag_name: ${{ needs.build.outputs.tag }}
           files: 'bin/*'
       #- name: Upload artifacts
       #  uses: actions/upload-artifact@v3
