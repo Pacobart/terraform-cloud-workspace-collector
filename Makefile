@@ -20,7 +20,7 @@ all: $(OS_ARCH_PAIRS)
 
 # Create a target for each platform-architecture pair
 $(OS_ARCH_PAIRS):
-	GOOS=$(firstword $(subst /, ,$@)) GOARCH=$(lastword $(subst /, ,$@)) go build -o $(BIN_DIR)/$(BINARY_NAME)_$(firstword $(subst /, ,$@))_$(lastword $(subst /, ,$@))
+	GOOS=$(firstword $(subst /, ,$@)) GOARCH=$(lastword $(subst /, ,$@)) go build -buildvcs=false -o $(BIN_DIR)/$(BINARY_NAME)_$(firstword $(subst /, ,$@))_$(lastword $(subst /, ,$@))
 
 # Clean up generated binaries
 clean:
