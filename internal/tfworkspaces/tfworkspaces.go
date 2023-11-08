@@ -9,11 +9,8 @@ import (
 
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/helpers"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/rlhttp"
-<<<<<<< HEAD
-=======
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfagentpools"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfprojects"
->>>>>>> main
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfteams"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfvariables"
 	"github.com/Pacobart/terraform-cloud-workspace-collector/internal/tfvariablesets"
@@ -38,22 +35,14 @@ type Workspace struct {
 		} `json:"organization"`
 		AgentPool struct {
 			Data struct {
-<<<<<<< HEAD
-				Id string `json:"id"`
-=======
 				Id   string `json:"id"`
 				Name string
->>>>>>> main
 			} `json:"data"`
 		} `json:"agent-pool"`
 		Project struct {
 			Data struct {
-<<<<<<< HEAD
-				Id string `json:"id"`
-=======
 				Id   string `json:"id"`
 				Name string
->>>>>>> main
 			} `json:"data"`
 		} `json:"project"`
 	} `json:"relationships"`
@@ -91,10 +80,7 @@ func GetWorkspaces(baseUrl string, token string, organization string) []Workspac
 
 		body, err := io.ReadAll(resp.Body)
 		helpers.Check(err)
-<<<<<<< HEAD
-=======
 		helpers.Debug(string(body))
->>>>>>> main
 
 		var workspaces WorkspaceList
 		err = json.Unmarshal(body, &workspaces)
@@ -104,8 +90,6 @@ func GetWorkspaces(baseUrl string, token string, organization string) []Workspac
 		nextPageURL = workspaces.Links.Next
 	}
 
-<<<<<<< HEAD
-=======
 	// add friendly names to project and agentpool
 	for i := range allWorkspaces {
 		ws := &allWorkspaces[i]
@@ -134,6 +118,5 @@ func GetWorkspaces(baseUrl string, token string, organization string) []Workspac
 		}
 	}
 
->>>>>>> main
 	return allWorkspaces
 }
