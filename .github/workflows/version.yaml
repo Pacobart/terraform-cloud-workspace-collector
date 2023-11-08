@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - main
+      - binaries
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -31,7 +32,7 @@ jobs:
       - name: Generate the artifacts
         uses: skx/github-action-build@master
         with:
-          builder: make
+          builder: .github/build
       - name: Upload the artifacts
         uses: skx/github-action-publish-binaries@master
         env:
