@@ -12,6 +12,7 @@ import (
 )
 
 type TeamAccess struct {
+	ID         string `json:"id"`
 	Attributes struct {
 		Access string `json:"access"`
 	}

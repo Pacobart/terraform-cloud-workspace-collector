@@ -57,7 +57,7 @@ func GenerateImportTeamAccess(workspace tfworkspaces.Workspace) []byte {
 	for _, teamAccess := range workspace.TeamsAccess {
 		teamAccessName := teamAccess.Relationships.Team.Data.Name
 		importKey := fmt.Sprintf("%s-%s", workspace.Attributes.Name, teamAccessName)
-		importValue := fmt.Sprintf("%s/%s/%s", workspace.Relationships.Organization.Data.ID, workspace.Attributes.Name, teamAccess.Relationships.Team.Data.Id) // org/workspace/team_access_id
+		importValue := fmt.Sprintf("%s/%s/%s", workspace.Relationships.Organization.Data.ID, workspace.Attributes.Name, teamAccess.ID) // org/workspace/team_access_id
 		importResource := fmt.Sprintf("\"%s.%s[\\\"%s\\\"]\"", resource, resourceIdentifier, importKey)
 		importCommand := fmt.Sprintf("%s %s %s\n", TERRAFORMIMPORTCOMMAND, importResource, importValue)
 		teamAccessBytes = append(teamAccessBytes, []byte(importCommand)...)

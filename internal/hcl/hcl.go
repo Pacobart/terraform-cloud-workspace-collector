@@ -118,7 +118,7 @@ func GenerateHCLTFImports(workspaces []tfworkspaces.Workspace) *hclwrite.File {
 		// import tfe_team_access team_access
 		for _, teamAccess := range ws.TeamsAccess {
 			teamAccessResource := fmt.Sprintf("team_access[\"%s-%s\"]", ws.Attributes.Name, teamAccess.Relationships.Team.Data.Name)
-			teamAccessID := fmt.Sprintf("%s/%s/%s", ws.Relationships.Organization.Data.ID, ws.Attributes.Name, teamAccess.Relationships.Team.Data.Id) // org/workspace/team_access_id
+			teamAccessID := fmt.Sprintf("%s/%s/%s", ws.Relationships.Organization.Data.ID, ws.Attributes.Name, teamAccess.ID) // org/workspace/team_access_id
 			teamAccessBlock := rootBody.AppendNewBlock("import", nil)
 			teamAccessBody := teamAccessBlock.Body()
 			teamAccessBody.SetAttributeTraversal("to", hcl.Traversal{
