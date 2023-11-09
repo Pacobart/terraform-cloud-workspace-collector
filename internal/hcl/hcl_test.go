@@ -91,6 +91,7 @@ func TestGenerateHCLTFImports(t *testing.T) {
 	variableSet1.Attributes.Name = "my-variable-set"
 	workspace.VariableSets = append(workspace.VariableSets, variableSet1)
 	var teamAccess1 tfteams.TeamAccess
+	teamAccess1.ID = "tws-19iugLwoNgtWZbKP"
 	teamAccess1.Attributes.Access = "read"
 	teamAccess1.Relationships.Team.Data.Id = "team-tv9993939393fupk"
 	teamAccess1.Relationships.Team.Data.Name = "My-Team"
@@ -114,7 +115,7 @@ import {
 
 import {
   to = tfe_team_access.team_access["my-workspace-My-Team"]
-  id = "org-tv9993939393fupk/my-workspace/team-tv9993939393fupk"
+  id = "org-tv9993939393fupk/my-workspace/tws-19iugLwoNgtWZbKP"
 }
 
 `
